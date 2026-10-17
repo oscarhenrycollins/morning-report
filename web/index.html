@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-app="morning-report">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <title>Morning Report</title>
+  <script src="boot.js"></script>
+  <link rel="stylesheet" href="wizard-ui.css">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="theme-client.js"></script>
+  <script defer src="markdown.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="wz-app mr-app">
+    <header class="wz-head"><h1>Morning Report</h1><p id="count"></p></header>
+    <nav class="mr-bar" aria-label="Report navigation">
+      <button id="older" class="mr-btn" type="button" aria-label="Older report" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+      </button>
+      <label class="mr-pick"><span class="wz-sr">Report date</span>
+        <select id="pick" aria-label="Report date"></select>
+      </label>
+      <button id="newer" class="mr-btn" type="button" aria-label="Newer report" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+      </button>
+      <span class="mr-grow"></span>
+      <a id="pdf" class="mr-btn mr-text" href="#" target="_blank" rel="noopener" hidden>PDF</a>
+      <button id="print" class="mr-btn mr-text" type="button">Print</button>
+    </nav>
+    <main class="wz-scroll mr-scroll">
+      <article id="paper" class="mr-paper" aria-live="polite"></article>
+      <div id="empty" class="wz-empty" hidden>
+        <div class="wz-tile" aria-hidden="true">☀</div>
+        <strong>No reports yet</strong>
+        <p>Your first report appears here after the next morning run.</p>
+      </div>
+    </main>
+    <p id="status" class="wz-status" role="status" aria-live="polite"></p>
+  </div>
+</body>
+</html>

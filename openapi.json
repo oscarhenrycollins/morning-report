@@ -1,0 +1,16 @@
+{
+  "openapi": "3.0.3",
+  "info": {"title": "Morning Report (read-only)", "version": "0.1.0"},
+  "paths": {
+    "/healthz": {"get": {"summary": "Health, archive presence and report count", "responses": {"200": {"description": "{ok,app,version,archive,reports}"}}}},
+    "/api/reports": {"get": {"summary": "List reports newest first", "responses": {"200": {"description": "{reports:[{date,markdown,pdf}],total}"}}}},
+    "/api/reports/{date}": {"get": {"summary": "Read one report as Markdown; date is YYYY-MM-DD or latest",
+      "parameters": [{"name": "date", "in": "path", "required": true, "schema": {"type": "string"}}],
+      "responses": {"200": {"description": "{date,title,markdown,pdf,older,newer}"}, "400": {"description": "Invalid date"}, "404": {"description": "No report"}}}},
+    "/api/reports/{date}.pdf": {"get": {"summary": "The PDF edition for a date, when one exists",
+      "parameters": [{"name": "date", "in": "path", "required": true, "schema": {"type": "string", "format": "date"}}],
+      "responses": {"200": {"description": "application/pdf"}, "404": {"description": "No PDF"}}}},
+    "/mcp": {"post": {"summary": "Stateless JSON-RPC MCP: initialize, tools/list, tools/call (reports_list, report_read), ping",
+      "responses": {"200": {"description": "JSON-RPC response"}, "202": {"description": "Notification acknowledged"}}}}
+  }
+}

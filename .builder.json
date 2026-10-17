@@ -1,0 +1,6 @@
+{
+  "request": "Show my daily morning reports newest first so I can open any edition inside Wizard OS",
+  "template": "hello-wizard",
+  "state": "private_repo",
+  "name": "Morning Report"
+}
