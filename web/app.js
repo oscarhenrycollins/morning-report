@@ -37,7 +37,7 @@ async function show(date) {
     current = data;
     const paper = el('paper');
     paper.replaceChildren(window.MorningMarkdown.render(data.markdown));
-    paper.scrollIntoView?.({ block: 'start' });
+    document.querySelector('.mr-scroll').scrollTop = 0;
     el('pick').value = data.date;
     el('older').disabled = !data.older;
     el('newer').disabled = !data.newer;

@@ -13,6 +13,8 @@
 .mr-pick { flex: 0 1 auto; min-width: 0; }
 .mr-pick select { width: 100%; min-width: 0; height: 40px; padding: 0 10px; border-radius: var(--r-tile); border: 1px solid var(--line-2); background: var(--fill); color: var(--ink); font-size: 14px; font-weight: 600; }
 .mr-paper h1 { text-wrap: balance; }
+/* Inside Wizard the shell's dock already clears the home indicator; the bar sits right on it. */
+html.wz-hosted .mr-bar { padding-bottom: 8px; }
 @media (max-width: 480px) { .mr-bar { gap: 4px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)); } .mr-btn.mr-text { padding: 0 10px; } .mr-paper h1 { font-size: 21px; } }
 .mr-scroll { padding: 14px 12px 28px; }
 
