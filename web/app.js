@@ -46,6 +46,7 @@ async function show(date) {
     if (data.pdf) pdf.href = 'api/reports/' + data.date + '.pdf';
     document.title = 'Morning Report · ' + shortDate(data.date);
     say(longDate(data.date));
+    markSeen();
   } catch (error) { say(error.message, 'error'); }
 }
 
@@ -86,13 +87,36 @@ if (!hosted) {
   });
 }
 
-load();
-// A new edition arrives each morning; refresh the list when the app comes back into view.
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) return;
-  const newest = reports.find((r) => r.markdown)?.date;
-  getJSON('api/reports').then((d) => {
+/* Unread badge: editions newer than the newest one you have actually looked at. The shell shows the
+ * count on this app's dock/bar mark (WizardApp.badge); a report counts as read once it is on screen
+ * in a visible window. "Seen" is the newest edition date read, kept on this device. */
+const SEEN = 'morning-report.seen';
+const seen = () => { try { return localStorage.getItem(SEEN) || ''; } catch (e) { return ''; } };
+const looking = () => !document.hidden && (window.WizardApp?.view?.isVisible?.() ?? true);
+function badge() {
+  const s = seen(), n = reports.filter((r) => r.markdown && r.date > s).length;
+  try { window.WizardApp?.badge?.set(n); } catch (e) {}
+}
+function markSeen() {
+  if (!current?.date || !looking()) return;
+  if (current.date > seen()) { try { localStorage.setItem(SEEN, current.date); } catch (e) {} }
+  badge();
+}
+addEventListener('storage', (e) => { if (e.key === SEEN) badge(); });
+
+async function refresh() {
+  try {
+    const newest = reports.find((r) => r.markdown)?.date;
+    const d = await getJSON('api/reports');
     const top = (d.reports || []).find((r) => r.markdown)?.date;
-    if (top && top !== newest) { const onNewest = current?.date === newest; reports = d.reports; fillPicker(); if (onNewest) show(top); }
-  }).catch(() => {});
-});
+    if (top && top !== newest) { const onNewest = current?.date === newest; reports = d.reports; fillPicker(); if (onNewest) await show(top); }
+  } catch (e) {}
+  badge(); markSeen();
+}
+
+load().then(() => { badge(); markSeen(); });
+// A new edition arrives each morning: check every few minutes while open, and whenever it comes back into view.
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+setInterval(refresh, 5 * 60 * 1000);
+// Read only when you actually look: re-check visibility often (cheap, no network).
+setInterval(markSeen, 15 * 1000);

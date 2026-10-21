@@ -4,7 +4,7 @@ id: morning-report
 name: Morning Report
 type: service
 category: app
-version: 0.1.0
+version: 0.2.0
 summary: Read your daily morning reports, newest first, and print any edition.
 license: GPL-3.0-only
 source: https://github.com/oscarhenrycollins/morning-report
