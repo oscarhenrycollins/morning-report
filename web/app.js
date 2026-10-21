@@ -94,7 +94,10 @@ const SEEN = 'morning-report.seen';
 const seen = () => { try { return localStorage.getItem(SEEN) || ''; } catch (e) { return ''; } };
 const looking = () => !document.hidden && (window.WizardApp?.view?.isVisible?.() ?? true);
 function badge() {
-  const s = seen(), n = reports.filter((r) => r.markdown && r.date > s).length;
+  const eds = reports.filter((r) => r.markdown);
+  // First run on a device: only the newest edition counts as unread, never the whole archive.
+  if (!seen() && eds.length > 1) { try { localStorage.setItem(SEEN, eds[1].date); } catch (e) {} }
+  const s = seen(), n = eds.filter((r) => r.date > s).length;
   try { window.WizardApp?.badge?.set(n); } catch (e) {}
 }
 function markSeen() {
