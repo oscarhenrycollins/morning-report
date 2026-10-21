@@ -132,4 +132,4 @@ load().then(() => { badge(); markSeen(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 setInterval(refresh, 5 * 60 * 1000);
 // Read only when you actually look: re-check visibility often (cheap, no network).
-setInterval(markSeen, 15 * 1000);
+setInterval(markSeen, 2000);
