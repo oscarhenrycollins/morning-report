@@ -26,16 +26,18 @@
     </main>
     <p id="status" class="wz-status" role="status" aria-live="polite"></p>
     <nav class="mr-bar" aria-label="Report navigation">
-      <button id="older" class="mr-btn" type="button" aria-label="Older report" disabled>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
-      </button>
-      <label class="mr-pick"><span class="wz-sr">Report date</span>
-        <select id="pick" aria-label="Report date"></select>
-      </label>
-      <button id="newer" class="mr-btn" type="button" aria-label="Newer report" disabled>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
-      </button>
-      <span class="mr-grow"></span>
+      <span class="mr-side" aria-hidden="true"></span>
+      <span class="mr-nav">
+        <button id="older" class="mr-btn" type="button" aria-label="Older report" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+        </button>
+        <label class="mr-pick"><span class="wz-sr">Report date</span>
+          <select id="pick" aria-label="Report date"></select>
+        </label>
+        <button id="newer" class="mr-btn" type="button" aria-label="Newer report" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+        </button>
+      </span>
       <a id="pdf" class="mr-btn mr-text" href="#" target="_blank" rel="noopener" hidden>PDF</a>
     </nav>
   </div>
