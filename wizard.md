@@ -4,8 +4,8 @@ id: morning-report
 name: Morning Report
 type: service
 category: app
-version: 0.2.3
-summary: Read your daily morning reports, newest first, and print any edition.
+version: 0.3.0
+summary: Read your daily morning reports, newest first, with an unread badge for new editions.
 license: GPL-3.0-only
 source: https://github.com/oscarhenrycollins/morning-report
 runtime:
@@ -38,4 +38,4 @@ health: /healthz
 
 # Morning Report
 
-A quiet, read-only reader for dated Markdown reports (with optional PDF editions) that a scheduled agent job writes into one folder. Newest edition on top, step older or newer, open the PDF, or print a clean paper copy. The report folder is mounted read-only; the app contains no report content, no schedule and no personal preferences.
+A quiet, read-only reader for dated Markdown reports (with optional PDF editions) that a scheduled agent job writes into one folder. Newest edition on top, an unread badge on the app's icon for editions you have not read yet, step older or newer from the bottom bar, or open the PDF. The report folder is mounted read-only; the app contains no report content, no schedule and no personal preferences.

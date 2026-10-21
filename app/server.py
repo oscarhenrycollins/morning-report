@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parent.parent if '__file__' in globals() else Path(os.environ.get('APP_ROOT', '.')).resolve()
 REPORTS = Path(os.environ.get('REPORTS_DIR', '/reports'))
 APP_ID = 'morning-report'
-VERSION = '0.2.3'
+VERSION = '0.3.0'
 PREFIX = '/' + APP_ID
 MAX_BYTES = 16 * 1024 * 1024
 NAME = re.compile(r'^[A-Za-z0-9_.-]*?(\d{4}-\d{2}-\d{2})(-mobile)?\.(md|pdf)$')

@@ -16,6 +16,15 @@
 <body>
   <div class="wz-app mr-app">
     <header class="wz-head"><h1>Morning Report</h1><p id="count"></p></header>
+    <main class="wz-scroll mr-scroll">
+      <article id="paper" class="mr-paper" aria-live="polite"></article>
+      <div id="empty" class="wz-empty" hidden>
+        <div class="wz-tile" aria-hidden="true">☀</div>
+        <strong>No reports yet</strong>
+        <p>Your first report appears here after the next morning run.</p>
+      </div>
+    </main>
+    <p id="status" class="wz-status" role="status" aria-live="polite"></p>
     <nav class="mr-bar" aria-label="Report navigation">
       <button id="older" class="mr-btn" type="button" aria-label="Older report" disabled>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
@@ -28,18 +37,7 @@
       </button>
       <span class="mr-grow"></span>
       <a id="pdf" class="mr-btn mr-text" href="#" target="_blank" rel="noopener" hidden>PDF</a>
-      <button id="unread" class="mr-btn mr-text" type="button" aria-label="Mark this report unread">Unread</button>
-      <button id="print" class="mr-btn mr-text" type="button">Print</button>
     </nav>
-    <main class="wz-scroll mr-scroll">
-      <article id="paper" class="mr-paper" aria-live="polite"></article>
-      <div id="empty" class="wz-empty" hidden>
-        <div class="wz-tile" aria-hidden="true">☀</div>
-        <strong>No reports yet</strong>
-        <p>Your first report appears here after the next morning run.</p>
-      </div>
-    </main>
-    <p id="status" class="wz-status" role="status" aria-live="polite"></p>
   </div>
 </body>
 </html>

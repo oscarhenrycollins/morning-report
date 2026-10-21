@@ -9,9 +9,9 @@
   "categories": [
     "app"
   ],
-  "description": "Read-only reader for dated morning reports written by your agent. Print any edition.",
+  "description": "Read-only reader for dated morning reports written by your agent. Unread badge for new editions.",
   "tipi_version": 1,
-  "version": "0.2.3",
+  "version": "0.3.0",
   "source": "https://github.com/oscarhenrycollins/morning-report",
   "exposable": false,
   "supported_architectures": [

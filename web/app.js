@@ -53,14 +53,6 @@ async function show(date) {
 el('pick').addEventListener('change', (e) => show(e.target.value));
 el('older').addEventListener('click', () => current?.older && show(current.older));
 el('newer').addEventListener('click', () => current?.newer && show(current.newer));
-el('print').addEventListener('click', () => window.print());
-el('unread').addEventListener('click', () => {
-  if (!current?.date) return;
-  const prev = reports.filter((r) => r.markdown && r.date < current.date)[0]?.date || '0000-00-00';
-  holdSeen = true;
-  try { if (seen() >= current.date) localStorage.setItem(SEEN, prev); } catch (e) {}
-  badge(); say('Marked unread', 'note');
-});
 document.addEventListener('keydown', (e) => {
   if (e.target.closest('select, input, textarea')) return;
   if (e.key === 'ArrowLeft' && current?.older) show(current.older);
@@ -107,11 +99,8 @@ function badge() {
   const s = seen(), n = eds.filter((r) => r.date > s).length;
   try { window.WizardApp?.badge?.set(n); } catch (e) {}
 }
-// "Unread": put this edition back to unread. It stays unread until you leave the app and come back to it.
-let holdSeen = false;
 function markSeen() {
-  if (!looking()) { holdSeen = false; return; }
-  if (!current?.date || holdSeen) return;
+  if (!current?.date || !looking()) return;
   if (current.date > seen()) { try { localStorage.setItem(SEEN, current.date); } catch (e) {} }
   badge();
 }
