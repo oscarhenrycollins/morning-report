@@ -15,6 +15,9 @@ html.mr-in-bar .mr-scroll { padding-bottom: 10px; }
 .mr-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .mr-btn:disabled { opacity: .35; cursor: default; }
 .mr-btn[hidden] { display: none; }
+.mr-reply { flex: none; display: flex; justify-content: center; }
+.mr-reply:has(button:not([hidden])) { padding: 6px 12px; }
+.mr-reply .mr-btn { min-height: 44px; min-width: 72px; }
 @media (hover: hover) { .mr-btn:not(:disabled):hover { background: var(--fill-2); } }
 .mr-pick { flex: 0 1 auto; min-width: 0; }
 .mr-pick select { width: 100%; min-width: 0; height: 40px; padding: 0 10px; border-radius: var(--r-tile); border: 1px solid var(--line-2); background: var(--fill); color: var(--ink); font-size: 14px; font-weight: 600; }
@@ -47,7 +50,7 @@ html.wz-hosted .mr-bar { padding-bottom: 8px; }
 @media print {
   @page { margin: 14mm; }
   html, body { background: #fff !important; height: auto; }
-  .wz-head, .mr-bar, .wz-status, #empty { display: none !important; }
+  .wz-head, .mr-bar, .mr-reply, .wz-status, #empty { display: none !important; }
   .wz-app, .wz-scroll { display: block; height: auto; max-width: none; overflow: visible; padding: 0; }
   .mr-paper { box-shadow: none; border-radius: 0; padding: 0; background: #fff; color: #000; font-size: 11.5pt; }
   .mr-paper a { color: #000; text-decoration: none; }

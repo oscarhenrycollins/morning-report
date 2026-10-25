@@ -31,12 +31,18 @@ function fillPicker() {
   el('count').textContent = n ? `${n} edition${n === 1 ? '' : 's'}` : '';
 }
 
+const reply = window.MorningReply.bind({ paper: el('paper'), button: el('reply'), say });
+let editionRequest = 0;
 async function show(date) {
+  const request = ++editionRequest;
+  reply.clear();
   try {
     const data = await getJSON('api/reports/' + (date || 'latest'));
+    if (request !== editionRequest) return;
     current = data;
     const paper = el('paper');
     paper.replaceChildren(window.MorningMarkdown.render(data.markdown));
+    reply.clear(data.date);
     document.querySelector('.mr-scroll').scrollTop = 0;
     el('pick').value = data.date;
     el('older').disabled = !data.older;
@@ -48,7 +54,7 @@ async function show(date) {
     document.title = 'Morning Report · ' + shortDate(data.date);
     say(longDate(data.date));
     markSeen();
-  } catch (error) { say(error.message, 'error'); }
+  } catch (error) { if (request === editionRequest) say(error.message, 'error'); }
 }
 
 el('pick').addEventListener('change', (e) => show(e.target.value));
@@ -77,6 +83,8 @@ el('older').addEventListener('click', () => current?.older && show(current.older
 el('newer').addEventListener('click', () => current?.newer && show(current.newer));
 document.addEventListener('keydown', (e) => {
   if (e.target.closest('select, input, textarea')) return;
+  // Do not turn keyboard text selection (including Shift+arrows) into edition navigation.
+  if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey || !window.getSelection()?.isCollapsed) return;
   if (e.key === 'ArrowLeft' && current?.older) show(current.older);
   if (e.key === 'ArrowRight' && current?.newer) show(current.newer);
 });
