@@ -85,6 +85,13 @@ async function select(page, selector = '#paper p', all = false) {
       assert.equal(await page.evaluate(()=>calls.length),beforeCalls+1);
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth > innerWidth),false);
       const box = await reply.boundingBox(); assert.ok(box.height>=44 && box.width>=44);
+      // Reply floats right next to the selected text (above it, or below when there is no room).
+      await select(page); await reply.waitFor({state:'visible'});
+      const near = await page.evaluate(() => { const r = getSelection().getRangeAt(0).getClientRects()[0], b = document.querySelector('#reply').getBoundingClientRect();
+        return {gapAbove: r.top - b.bottom, gapBelow: b.top - r.bottom, overlapX: Math.min(r.right, b.right) - Math.max(r.left, b.left), inView: b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight}; });
+      assert.ok(near.inView, 'Reply stays inside the window');
+      assert.ok((near.gapAbove >= 0 && near.gapAbove <= 16) || (near.gapBelow >= 0 && near.gapBelow <= 40), 'Reply sits beside the selection: ' + JSON.stringify(near));
+      assert.ok(near.overlapX > 0 || Math.abs(near.overlapX) < 80, 'Reply is horizontally near the selection');
       await page.screenshot({path:(process.env.MR_QA_OUTPUT || '/home/oscar/.hermes/cache/scratch/mr-reply-qa')+'/'+(mobile?'mobile':'desktop')+'.png',fullPage:true});
       assert.deepEqual(writes,[]); assert.deepEqual(errors,[]);
       results.push({viewport:mobile?'390 mobile touch':'1280 desktop',exact_payload:true,keyboard:true,preserve_selection:true,receipt_errors:true,outside_rejected:true,date_clears:true,safe_text:true,blocked_writes:writes,page_errors:errors});

@@ -30,8 +30,28 @@
         }
       }
       button.hidden = !selected;
+      place();
+    }
+    /* Float Reply just above the selected passage (below it when there is no room above),
+     * kept inside the window and following the text as the report scrolls. */
+    function place() {
+      if (!selected) return;
+      const s = window.getSelection();
+      if (!s || !s.rangeCount) return;
+      const rects = [...s.getRangeAt(0).getClientRects()].filter((r) => r.width || r.height);
+      if (!rects.length) return;
+      const first = rects[0], last = rects[rects.length - 1];
+      const w = button.offsetWidth || 72, h = button.offsetHeight || 40, gap = 8, vw = document.documentElement.clientWidth, vh = window.innerHeight;
+      let top = first.top - h - gap;
+      if (top < gap) top = last.bottom + gap;
+      top = Math.max(gap, Math.min(vh - h - gap, top));
+      const left = Math.max(gap, Math.min(vw - w - gap, first.left + first.width / 2 - w / 2));
+      button.style.left = Math.round(left) + 'px';
+      button.style.top = Math.round(top) + 'px';
     }
     document.addEventListener('selectionchange', capture);
+    document.addEventListener('scroll', () => { if (!pressing) place(); }, true);
+    window.addEventListener('resize', () => { if (!pressing) place(); });
     button.addEventListener('pointerdown', (e) => {
       capture(); pressing = true;
       // Keep the selected passage on mouse/touch activation rather than selecting the control.
