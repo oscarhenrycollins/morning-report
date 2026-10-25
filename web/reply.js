@@ -70,7 +70,7 @@
         say('Reply opened in Chats. Nothing sent.', 'note');
       } catch (error) {
         // Host admission may reject this app even when Notifications is supported. Never bypass it.
-        say(error.message === 'Context draft unavailable' ? 'This Wizard shell does not support Morning Report replies yet. Nothing sent.' : (error.message || 'Could not open Chats. Nothing sent.'), 'error');
+        say(error.message === 'Context draft unavailable' ? 'Reload Wizard (refresh the whole page) to turn on Reply. Nothing sent.' : (error.message || 'Could not open Chats. Nothing sent.'), 'error');
       }
     });
     return { clear(nextDate = null) {

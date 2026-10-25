@@ -59,7 +59,7 @@ async function select(page, selector = '#paper p', all = false) {
       assert.deepEqual(await page.evaluate(()=>calls[1]),payload('2026-01-02',selected.text,selected.start,selected.end));
       for (const mode of ['bad','missingSent','throw']) {
         await page.evaluate(mode=>{replyMode=mode;},mode); await reply.click();
-        assert.match(await page.locator('#status').innerText(), mode==='throw'?/does not support Morning Report/:/Could not confirm/);
+        assert.match(await page.locator('#status').innerText(), mode==='throw'?/Reload Wizard/:/Could not confirm/);
       }
       await page.evaluate(()=>{delete WizardApp.nav;}); await reply.click();
       assert.match(await page.locator('#status').innerText(),/needs a Wizard shell/);
