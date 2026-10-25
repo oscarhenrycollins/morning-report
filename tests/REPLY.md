@@ -1,23 +1,22 @@
-# Selected-text Reply (0.5.0 candidate, not released)
+# Selected-text Reply — 0.5.0, private owner delivery
 
-Select text inside the report, then use **Reply** (mouse, touch or keyboard). The app supplies `{id,title,message}` to the existing synchronous `WizardApp.nav.openContextDraft` capability. The title includes the ISO report date; the message is exactly the selected visible text. There is deliberately no whole-report fallback: an accidental selection loss must not send a different scope to Chats. Ranges outside or crossing the report are rejected. Selection is cleared when date navigation starts; late edition loads cannot restore stale content. Passages above the shell's 32,000-character limit produce an error instead of being truncated.
+Select text inside the report and use **Reply** (mouse, touch or keyboard). The title carries the report date and the reply message is exactly the selected text. No whole-report fallback, automatic send, session creation or run. Selections outside/crossing the report are refused; changing editions clears the selection. Text above 32,000 characters is rejected, not truncated.
 
-Only `{kind:'unsent-draft',sent:false}` is success. The app never calls send, session creation or run APIs. Text stays data, rendered through the existing safe markdown renderer and textContent status messages.
+`WizardApp.nav.openContextDraft({id,title,message})` is the shared synchronous host API. Only `{kind:'unsent-draft',sent:false}` is success. The verified current visible same-origin installed Wizard app receives its own shell-derived `<appId>:<id>` namespace. Caller-selected app ids and keys cannot spoof Notifications. Hidden, detached, navigated and stale documents remain rejected. Notifications retains its existing namespace and behavior. The shell adapter puts the item in canonical `wos.chat.drafts.v1`, as a reply beside an empty main Chats composer; it never invokes send/run APIs.
 
-## Release blocker: installed shell admission
-
-Inspection of the running `wizard-ux_wizardapps-wizard-ux-1` container's `/usr/share/nginx/wizard-ux/core/app-services.js` shows that `openContextDraft` still requires `st.appId === 'notifications'` and hardcodes `notifications:` as the item namespace. Therefore this candidate handles the rejection gracefully but **cannot open a real Morning Report Chats draft on the installed shell**. Do not spoof the app id or bypass the shell. A separately authorized shared shell extension must admit Morning Report with app-scoped keys before this app can be released as working end-to-end. Neither other app source nor the production shell was changed by this candidate.
-
-## Tests
+## Verification
 
 - `node tests/reply.test.js`
-- `node tests/reply.browser.test.js` (requires Playwright; override `PLAYWRIGHT_MODULE` if needed)
-- `python3 app/build_view.py`
-- `python3 tools/package.py` (builder CLI on PATH)
-- `wam check .`
+- `node tests/reply.browser.test.js` — staged real HTTP with isolated fixtures and an explicit host contract stub; not full-shell proof.
+- `python3 app/build_view.py`, `python3 tools/package.py`, `wam check .` (builder CLI on PATH).
+- Shell: `node --test tests/*.test.mjs`; `qa-app-context-draft.cjs` with `QA_PLAYWRIGHT`, `QA_BASE`, `QA_OUT`, optional `QA_HOST_RESOLVER`.
 
-Browser tests use the real staged HTTP server, an isolated read-only `tests/fixtures` report mount and an explicitly synthetic WizardApp contract stub. This is **not full-shell integration evidence**. Default stage URL: `http://127.0.0.1:18812/morning-report/` (`MR_STAGE_URL` overrides its origin). Fixtures contain no owner data. The stub never creates actual Chats state. All non-read HTTP requests are blocked and asserted absent.
+Full-shell baseline on the previous owner build rejected Morning Report as expected. Candidate and privately deployed live owner shell passed desktop + mobile Chromium touch emulation: selected passage → trusted Reply click/tap → visible Chats reply bubble → exact canonical persisted reply readback → reload persistence. The probe uses isolated browser localStorage/IndexedDB, synthetic report GET responses from the read-only stage and blocked workspace/private session reads. All non-read production requests are blocked; zero send/run/session mutation requests were attempted. Screenshots were inspected for both surfaces. App frontend and shell are the live builds, not contract stubs, during final integration.
 
-Coverage: exact selected text/date/id payload, repeat identity, keyboard activation and selection, touch button activation, strict receipt handling, host rejection and missing API, ranges outside/crossing report, date switch invalidation, literal HTML text, no send requests, no page errors, no mobile overflow, 44px Reply target. DOM Range supplies the browser's real selection; this does not certify physical OS touch-selection handles.
+## Private deployment and rollback
 
-Real-shell release gate: separately approve and implement app-scoped shared draft admission, then exercise selection → Reply in desktop/mobile shell, read back the canonical persisted unsent draft/reply context and verify zero session/run/send requests. Parent owns production/public release approval. No push, publication or production update is part of this candidate.
+The app remains local/private: no public push or store publication. A user-config Compose override replaces only the inline command payload with the 0.5.0 package. The generated store Compose, report mount, security restrictions and report files stay intact. Supply BOTH generated and user-config `app.env` files to Compose; omitting the latter loses the trusted public host/origin values and causes 403s. Remove the private command override and compose up with those same env files to roll back to the store payload.
+
+The shell is delivered through the supported My release rebuild, with its automatic push redirected to a local bare receipt repository for this no-publication task. Runtime receipts and deployment backups are retained privately on the owner box; no existing owner chat was used for QA.
+
+Limitations: Chromium touch emulation + DOM Range does not prove physical iOS/Android native selection handles. Drafts use the existing device-local canonical Chats store, not cross-device draft sync. Store updates may replace the app's packaged baseline; the private override is reversible and must be reconciled on a future app release.
