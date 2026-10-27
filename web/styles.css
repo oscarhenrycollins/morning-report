@@ -1,5 +1,4 @@
 /* Morning Report: the report is a sheet of paper; the chrome around it is Wizard UI. */
-.mr-app { max-width: 820px; }
 /* All controls sit at the bottom, in thumb reach. */
 .mr-bar { flex: none; display: flex; align-items: center; gap: 6px; padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }
 .mr-bar[hidden], html.mr-in-bar .mr-bar { display: none !important; }
@@ -25,12 +24,14 @@ html.mr-in-bar .mr-scroll { padding-bottom: 10px; }
 .mr-paper h1 { text-wrap: balance; }
 /* Inside Wizard the shell's dock already clears the home indicator; the bar sits right on it. */
 html.wz-hosted .mr-bar { padding-bottom: 8px; }
-@media (max-width: 480px) { .mr-bar { gap: 4px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)); } .mr-btn.mr-text { padding: 0 10px; } .mr-paper h1 { font-size: 21px; } }
-.mr-scroll { padding: 14px 12px 28px; }
+@container wz-app (max-width: 480px) { .mr-bar { gap: 4px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)); } .mr-btn.mr-text { padding: 0 10px; } .mr-paper h1 { font-size: 21px; } }
+.mr-scroll { padding: 14px var(--wz-gutter, 12px) 28px; }
 
 /* The sheet: plain, high-contrast, printable. It stays paper-white in every skin on purpose. */
 .mr-paper { background: #fffdf8; color: #1b1a17; border-radius: var(--r); padding: 30px 34px 36px; box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 10px 30px rgba(0,0,0,.22);
   font: 15.5px/1.55 Georgia, "Iowan Old Style", "Times New Roman", serif; overflow-wrap: anywhere; }
+/* The sheet fills the window; only its text keeps a readable line (the .wz-prose 72ch measure, rule 1). */
+@container wz-app (min-width: 561px) { .mr-paper { padding-inline: max(34px, calc((100% - 72ch) / 2)); } }
 .mr-paper[hidden] { display: none; }
 .mr-paper h1 { font: 700 24px/1.2 var(--font); letter-spacing: -.01em; margin: 0 0 4px; }
 .mr-paper h1 + p { margin-top: 0; color: #6b665c; font-size: 13px; }
@@ -45,7 +46,7 @@ html.wz-hosted .mr-bar { padding-bottom: 8px; }
 .mr-paper blockquote { margin: 0 0 10px; padding-left: 12px; border-left: 3px solid #d9d1bf; color: #4a463e; }
 .mr-paper hr { border: 0; border-top: 1px solid #e5dfd2; margin: 18px 0; }
 .mr-paper em { color: #4a463e; }
-@media (max-width: 560px) { .mr-paper { padding: 22px 18px 26px; font-size: 15px; } .mr-scroll { padding: 10px 6px 20px; } }
+@container wz-app (max-width: 560px) { .mr-paper { padding: 22px 18px 26px; font-size: 15px; } .mr-scroll { padding: 10px 6px 20px; } }
 
 /* Print: only the sheet, edge to edge, black on white. */
 @media print {
