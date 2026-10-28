@@ -16,7 +16,7 @@ async function select(page, selector = '#paper p', all = false) {
   }, {selector, all});
 }
 (async () => {
-  const browser = await chromium.launch({headless:true});
+  const browser = await chromium.launch({headless:true, ...(process.env.CHROMIUM_PATH ? {executablePath: process.env.CHROMIUM_PATH} : {})});
   const results = [];
   try {
     for (const mobile of [false, true]) {
@@ -61,8 +61,11 @@ async function select(page, selector = '#paper p', all = false) {
         await page.evaluate(mode=>{replyMode=mode;},mode); await reply.click();
         assert.match(await page.locator('#status').innerText(), mode==='throw'?/Reload Wizard/:/Could not confirm/);
       }
-      await page.evaluate(()=>{delete WizardApp.nav;}); await reply.click();
-      assert.match(await page.locator('#status').innerText(),/needs a Wizard shell/);
+      await page.evaluate(()=>{window.__nav=WizardApp.nav; delete WizardApp.nav;});
+      // Older Wizard (no draft support): a fresh selection shows no Reply at all.
+      await page.evaluate(()=>getSelection().removeAllRanges()); await reply.waitFor({state:'hidden'});
+      await select(page); await page.waitForTimeout(80); assert.equal(await reply.isVisible(),false,'Reply hidden without shell support');
+      await page.evaluate(()=>{WizardApp.nav=window.__nav;});
       await select(page,'.wz-head h1',true);
       await reply.waitFor({state:'hidden'});
       // Crossing the paper boundary must also be rejected.

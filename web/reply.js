@@ -29,7 +29,9 @@
           if (text.trim()) selected = { date, text, start: before.toString().length, end: before.toString().length + text.length };
         }
       }
-      button.hidden = !selected;
+      /* Reply is an optional extra: it appears only on a Wizard that can open a Chats draft, so the app
+       * runs unchanged on older Wizards (the report still reads fine; no button that cannot work). */
+      button.hidden = !selected || typeof host()?.nav?.openContextDraft !== 'function';
       place();
     }
     /* Float Reply just above the selected passage (below it when there is no room above),
