@@ -42,6 +42,9 @@ html.wz-hosted .mr-bar { padding-bottom: 8px; }
 .mr-paper blockquote { margin: 0 0 10px; padding-left: 12px; border-left: 3px solid #d9d1bf; color: #4a463e; }
 .mr-paper hr { border: 0; border-top: 1px solid #e5dfd2; margin: 18px 0; }
 .mr-paper em { color: #4a463e; }
+/* Selected text stays readable on the paper in every skin: dark ink on a soft accent tint
+   (the dark skins' default selection paints near-white text on the cream sheet). */
+.mr-paper ::selection, .mr-paper::selection { background: color-mix(in srgb, var(--accent) 38%, #fffdf8); color: #1b1a17; }
 @container wz-app (max-width: 560px) { .mr-paper { padding: 22px 18px 26px; font-size: 15px; } .mr-scroll { padding: 10px 6px 20px; } }
 
 /* Print: only the sheet, edge to edge, black on white. */
