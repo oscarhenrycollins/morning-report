@@ -1,0 +1,15 @@
+'use strict';
+const assert = require('node:assert/strict');
+const {payload} = require('../web/reply');
+const p = payload('2026-01-02', '<img src=x onerror=alert(1)>\nExact text', 4, 44);
+assert.match(p.id, /^[a-zA-Z0-9_-]{1,128}$/);
+assert.deepEqual(p, payload('2026-01-02', p.message, 4, 44));
+assert.equal(p.title, 'Morning Report · 2026-01-02');
+assert.equal(p.message, '<img src=x onerror=alert(1)>\nExact text');
+assert.notEqual(p.id, payload('2026-01-02', 'Different', 4, 44).id);
+assert.notEqual(p.id, payload('2026-01-03', p.message, 4, 44).id);
+assert.throws(() => payload('', 'hi', 0, 2));
+assert.throws(() => payload('2026-01-02', '  ', 0, 2));
+assert.throws(() => payload('2026-01-02', 'a'.repeat(32001), 0, 32001));
+assert.equal(payload('2026-01-02', 'a'.repeat(32000), 0, 32000).message.length, 32000);
+console.log('PASS reply unit: stable bounded identity, exact text/date, empty/oversize guards');
