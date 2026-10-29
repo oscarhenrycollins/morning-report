@@ -53,18 +53,25 @@ html.wz-hosted .mr-bar { padding-bottom: 8px; }
 html .mr-paper ::selection, html .mr-paper::selection { background: color-mix(in srgb, var(--accent, #8f63ff) 38%, #fffdf8) !important; color: #1b1a17 !important; }
 @container wz-app (max-width: 560px) { .mr-paper { padding: 22px 18px 26px; font-size: 15px; } .mr-scroll { padding: 10px 6px 20px; } }
 
-/* Portfolio block (cards.js): one total line, then one mono ticker line per position. */
-.mr-paper .mr-portfolio { --up: #1d6b45; --down: #a3352a; margin: 0 0 12px; font: 13.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+/* Portfolio block (cards.js): name · in-vs-now bar · $in → $now · P&L, one line each. */
+.mr-paper .mr-portfolio { --up: #1d6b45; --down: #a3352a; list-style: none; margin: 0 0 12px; padding: 0; font-variant-numeric: tabular-nums; }
 .mr-paper .mr-portfolio .mr-up { color: var(--up); } .mr-paper .mr-portfolio .mr-down { color: var(--down); }
-.mr-paper .mr-tk-total { margin: 0 0 4px; }
-.mr-tk-cash { color: #6b665c; }
-.mr-paper .mr-tk-list { list-style: none; margin: 0; padding: 0; }
-.mr-paper .mr-tk { display: grid; grid-template-columns: minmax(0, 1fr) 3.5ch 6ch 6ch 15ch; gap: 0 10px; margin: 0; padding: 2px 0; border-top: 1px solid #ece6d9; white-space: nowrap; }
-.mr-tk > * { overflow: hidden; text-overflow: ellipsis; }
-.mr-tk-sym { font-weight: 700; color: #1b1a17; text-decoration: none; }
-.mr-tk-side { color: #6b665c; }
-.mr-tk-px, .mr-tk-d, .mr-tk-pl { text-align: right; }
-@container wz-app (max-width: 420px) { .mr-paper .mr-tk { grid-template-columns: minmax(0, 1fr) 6ch 6ch 8ch; } .mr-tk-side { display: none; } .mr-tk-pct { display: none; } }
+.mr-paper .mr-pf { display: grid; grid-template-columns: 11ch minmax(40px, 1fr) 17ch 14ch; align-items: center; gap: 0 12px; margin: 0; padding: 5px 0; font-size: 14px; }
+.mr-paper .mr-pf + .mr-pf { border-top: 1px solid #ece6d9; }
+.mr-pf-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #1b1a17; text-decoration: none; }
+.mr-pf-total .mr-pf-name, .mr-pf-total .mr-pf-pl { font-weight: 700; }
+.mr-pf-amt { color: #6b665c; white-space: nowrap; text-align: right; }
+.mr-pf-pl { text-align: right; white-space: nowrap; font-weight: 600; }
+.mr-pf-bar { display: flex; height: 8px; border-radius: 2px; background: #f1ece0; overflow: hidden; }
+.mr-pf-total .mr-pf-bar { height: 12px; }
+.mr-pf-in { background: #1b1a17; }
+.mr-pf-diff.mr-up { background: radial-gradient(circle, var(--up) 0 1.1px, transparent 1.3px) 0 0 / 3px 3px, radial-gradient(circle, var(--up) 0 1.1px, transparent 1.3px) 1.5px 1.5px / 3px 3px; }
+.mr-pf-diff.mr-down { background: repeating-linear-gradient(135deg, var(--down) 0 1.5px, transparent 1.5px 4px); }
+/* Phone: name and P&L on top, the bar and amounts under them. */
+@container wz-app (max-width: 520px) {
+  .mr-paper .mr-pf { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "n p" "b a"; gap: 4px 12px; }
+  .mr-pf-name { grid-area: n; } .mr-pf-pl { grid-area: p; } .mr-pf-bar { grid-area: b; } .mr-pf-amt { grid-area: a; font-size: 12.5px; }
+}
 .mr-paper .mr-pre { margin: 0 0 10px; padding: 10px 12px; background: #f1ece0; border-radius: 6px; overflow-x: auto; font: 12.5px/1.45 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
 
 /* Print: only the sheet, edge to edge, black on white. */
