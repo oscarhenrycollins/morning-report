@@ -51,6 +51,58 @@ html.wz-hosted .mr-bar { padding-bottom: 8px; }
 .mr-paper ::selection, .mr-paper::selection { background: color-mix(in srgb, var(--accent) 38%, #fffdf8); color: #1b1a17; }
 @container wz-app (max-width: 560px) { .mr-paper { padding: 22px 18px 26px; font-size: 15px; } .mr-scroll { padding: 10px 6px 20px; } }
 
+/* Cards drawn from fenced report blocks (cards.js): newsprint ink on the paper, mono figures, dithered fills. */
+.mr-paper .mr-card { --up: #1d6b45; --down: #a3352a; --flat: #3b3830; --rule: #1b1a17; --mute: #6b665c; --hair: #e5dfd2;
+  container: mr-card / inline-size; margin: 4px 0 14px; padding: 16px 18px 14px; border: 1.5px solid var(--rule); border-radius: 10px;
+  background: #fffdf8; box-shadow: 4px 4px 0 var(--rule); font-family: var(--font); }
+.mr-paper .mr-card .mr-up { color: var(--up); } .mr-paper .mr-card .mr-down { color: var(--down); } .mr-paper .mr-card .mr-flat { color: var(--flat); }
+.mr-card-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: 12px; }
+.mr-card-top > .mr-total-k { grid-column: 1 / -1; }
+.mr-total, .mr-gain, .mr-quote, .mr-stat { display: flex; flex-direction: column; min-width: 0; }
+.mr-total-k, .mr-gain-k, .mr-stat-k, .mr-quote-k { font: 600 11.5px/1.3 var(--font); color: var(--mute); letter-spacing: .01em; }
+.mr-total-v { font: 800 34px/1.05 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: -.03em; font-variant-numeric: tabular-nums; color: var(--rule); }
+.mr-gain { align-items: flex-end; text-align: right; }
+.mr-gain-v { font: 800 19px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+.mr-gain .mr-gain-k { color: inherit; opacity: .85; }
+/* Cost vs value: solid ink is what you paid, the dithered tail is the gain (red hatch for a loss). */
+.mr-bar-cv { display: flex; height: 10px; margin: 12px 0 10px; border: 1.5px solid var(--rule); border-radius: 3px; overflow: hidden; background: #fffdf8; }
+.mr-bar-cost { background: var(--rule); }
+.mr-bar-gap.mr-up { background: radial-gradient(circle, var(--up) 0 1.1px, transparent 1.3px) 0 0 / 3px 3px, radial-gradient(circle, var(--up) 0 1.1px, transparent 1.3px) 1.5px 1.5px / 3px 3px; }
+.mr-bar-gap.mr-down { background: repeating-linear-gradient(135deg, var(--down) 0 1.5px, transparent 1.5px 4px); }
+.mr-pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 4px; }
+.mr-pills .mr-stat { flex-direction: row; align-items: baseline; gap: 6px; padding: 3px 9px; border: 1px solid var(--hair); border-radius: 999px; background: #f6f1e5; }
+.mr-pills .mr-stat-v { font: 700 12.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--rule); }
+/* One position */
+.mr-pos { margin-top: 14px; padding-top: 14px; border-top: 1.5px dashed var(--hair); }
+.mr-pos-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.mr-pos-who { min-width: 0; }
+.mr-paper .mr-pos-name { display: inline; font: 750 17px/1.25 var(--font); margin: 0; }
+.mr-pos-name a { color: var(--rule); text-decoration: none; background: linear-gradient(var(--rule), var(--rule)) 0 100% / 100% 1px no-repeat; }
+.mr-chip { display: inline-block; vertical-align: 2px; margin-right: 7px; padding: 1px 7px; border-radius: 4px; font: 800 10.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; text-transform: uppercase; color: #fffdf8; background: var(--up); }
+.mr-chip-no { background: var(--down); }
+.mr-paper .mr-pos-sub { margin: 3px 0 0; font: 500 12.5px/1.4 var(--font); color: var(--mute); }
+.mr-quote { align-items: flex-end; text-align: right; flex: none; }
+.mr-quote-px { font: 800 26px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: -.03em; font-variant-numeric: tabular-nums; color: var(--rule); }
+.mr-delta { margin-top: 3px; font: 700 12px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.mr-chart { margin: 10px 0 4px; }
+.mr-chart canvas { display: block; width: 100%; height: 132px; }
+.mr-axis { display: flex; justify-content: space-between; font: 600 10.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--mute); border-top: 1.5px solid var(--rule); padding-top: 2px; }
+.mr-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; margin-top: 10px; background: var(--hair); border: 1px solid var(--hair); border-radius: 6px; overflow: hidden; }
+.mr-stats .mr-stat { padding: 7px 9px; background: #fffdf8; }
+.mr-stats .mr-stat-v { font: 700 14px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; color: var(--rule); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mr-stats .mr-stat-s { font: 700 11.5px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.mr-stats .mr-stat.mr-up .mr-stat-v { color: var(--up); } .mr-stats .mr-stat.mr-down .mr-stat-v { color: var(--down); }
+.mr-stats .mr-stat.mr-up .mr-stat-s { color: var(--up); } .mr-stats .mr-stat.mr-down .mr-stat-s { color: var(--down); }
+.mr-paper .mr-muted { color: var(--mute); font-size: 13px; margin: 8px 0 0; }
+@container mr-card (max-width: 440px) {
+  .mr-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mr-stats .mr-stat:nth-child(4) { grid-column: span 1; } .mr-stats .mr-stat:last-child { grid-column: span 2; }
+  .mr-total-v { font-size: 30px; }
+  .mr-chart canvas { height: 112px; }
+}
+.mr-paper .mr-pre { margin: 0 0 10px; padding: 10px 12px; background: #f1ece0; border-radius: 6px; overflow-x: auto; font: 12.5px/1.45 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
+@media print { .mr-paper .mr-card { box-shadow: none; break-inside: avoid; } }
+
 /* Print: only the sheet, edge to edge, black on white. */
 @media print {
   @page { margin: 14mm; }
