@@ -1,6 +1,7 @@
 /* Minimal, safe Markdown renderer: builds DOM nodes only (never innerHTML from report text).
  * Supports headings, paragraphs, bullet/numbered lists, bold, italics, inline code, links (http/https),
- * horizontal rules and blockquotes. Anything else renders as plain text. */
+ * horizontal rules, blockquotes and ``` fenced blocks (drawn as cards by cards.js when the language is a
+ * known card kind, else preformatted text). Anything else renders as plain text. */
 (() => {
   'use strict';
   const safeUrl = (u) => { try { const x = new URL(u, location.href); return /^https?:$/.test(x.protocol) ? x.href : null; } catch (e) { return null; } };
@@ -28,13 +29,22 @@
   function render(md) {
     const root = document.createDocumentFragment();
     const lines = String(md).replace(/\r\n?/g, '\n').split('\n');
-    let para = [], list = null, quote = null;
+    let para = [], list = null, quote = null, fence = null;
     const flushPara = () => { if (para.length) { const p = document.createElement('p'); inline(p, para.join(' ')); root.append(p); para = []; } };
     const flushList = () => { list = null; };
     const flushQuote = () => { quote = null; };
     for (const raw of lines) {
       const line = raw.replace(/\s+$/, '');
       let m;
+      if (fence) {
+        if (/^\s*```\s*$/.test(line)) {
+          const text = fence.body.join('\n');
+          root.append(window.MorningCards ? window.MorningCards.render(fence.lang, text) : Object.assign(document.createElement('pre'), { textContent: text }));
+          fence = null;
+        } else fence.body.push(raw);
+        continue;
+      }
+      if ((m = /^\s*```\s*([\w-]*)\s*$/.exec(line))) { flushPara(); flushList(); flushQuote(); fence = { lang: m[1].toLowerCase(), body: [] }; continue; }
       if (!line.trim()) { flushPara(); flushList(); flushQuote(); continue; }
       if ((m = /^(#{1,6})\s+(.*)$/.exec(line))) {
         flushPara(); flushList(); flushQuote();
@@ -56,6 +66,7 @@
       flushList(); flushQuote();
       para.push(line.trim());
     }
+    if (fence) root.append(Object.assign(document.createElement('pre'), { textContent: '```' + fence.lang + '\n' + fence.body.join('\n') }));
     flushPara();
     return root;
   }
