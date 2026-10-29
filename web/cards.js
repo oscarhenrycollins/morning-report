@@ -4,7 +4,7 @@
  *   ```
  * Built from DOM nodes only (report text never goes through innerHTML). A block that is not valid
  * JSON of a known kind falls back to plain preformatted text, so a bad block is visible, never hidden.
- * A portfolio is one total line plus one ticker-style line per position. */
+ * A portfolio is a total line plus one line per position: put in → worth now, a bar, and the P&L. */
 (() => {
   'use strict';
   const h = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
@@ -19,42 +19,40 @@
   const arrow = (v) => (v > 0.00001 ? '▲' : v < -0.00001 ? '▼' : '■');
   const safeUrl = (u) => { try { const x = new URL(u); return /^https:$/.test(x.protocol) ? x.href : null; } catch (e) { return null; } };
 
-  /* Short ticker-style label: the subject's surname ("Benjamin Netanyahu" -> NETANYAHU), else the market title. */
-  const ticker = (p) => {
-    const n = String(p.name || p.market || 'Market').trim();
-    return (p.name ? n.split(/\s+/).pop() : n).toUpperCase();
-  };
+  /* Short label: the subject's surname ("Benjamin Netanyahu" -> Netanyahu), else the market title. */
+  const label = (p) => { const n = String(p.name || p.market || 'Market').trim(); return p.name ? n.split(/\s+/).pop() : n; };
 
-  /* One line per position: TICKER  side  price  24h  P&L. Scales to twenty positions. */
-  function row(pos) {
-    const li = h('li', 'mr-tk');
-    const price = num(pos.price), cost = num(pos.cost) ?? 0, value = num(pos.value) ?? cost, pnl = value - cost;
-    const url = safeUrl(pos.url || '');
-    const sym = h(url ? 'a' : 'span', 'mr-tk-sym', ticker(pos));
-    if (url) { sym.href = url; sym.target = '_blank'; sym.rel = 'noopener noreferrer'; }
-    sym.title = [pos.name, pos.market].filter(Boolean).join(' — ');
-    li.append(sym, h('span', 'mr-tk-side', String(pos.outcome || 'Yes').toUpperCase()));
-    li.append(h('span', 'mr-tk-px', price != null ? cents(price) : '—'));
-    const prev = num(pos.prev);
-    li.append(h('span', 'mr-tk-d mr-' + tone(price != null && prev != null ? price - prev : 0),
-      price != null && prev != null ? `${arrow(price - prev)}${cents(Math.abs(price - prev))}` : ''));
-    const pl = h('span', 'mr-tk-pl mr-' + tone(pnl), money(pnl, true));
-    if (cost) pl.append(h('span', 'mr-tk-pct', ' ' + pct((pnl / cost) * 100)));
-    li.append(pl);
+  /* Put in vs worth now: solid = money in (or what is left of it), dotted green = gain, hatched red = loss.
+     Widths are shares of `scale` (the biggest amount on the card) so rows compare. */
+  function bar(cost, value, scale) {
+    const b = h('span', 'mr-pf-bar'); b.setAttribute('aria-hidden', 'true');
+    const base = h('span', 'mr-pf-in'), diff = h('span', 'mr-pf-diff mr-' + tone(value - cost));
+    base.style.width = (Math.min(cost, value) / scale) * 100 + '%';
+    diff.style.width = (Math.abs(value - cost) / scale) * 100 + '%';
+    b.append(base, diff);
+    return b;
+  }
+
+  /* One line: name · bar · $in → $now · ±$P&L ±%. */
+  function line(name, cost, value, scale, url, cls) {
+    const li = h('li', 'mr-pf' + (cls ? ' ' + cls : ''));
+    const pnl = value - cost;
+    const n = h(url ? 'a' : 'span', 'mr-pf-name', name);
+    if (url) { n.href = url; n.target = '_blank'; n.rel = 'noopener noreferrer'; }
+    li.append(n, bar(cost, value, scale), h('span', 'mr-pf-amt', `${money(cost)} → ${money(value)}`),
+      h('span', 'mr-pf-pl mr-' + tone(pnl), `${money(pnl, true)} ${cost ? pct((pnl / cost) * 100) : ''}`.trim()));
+    li.setAttribute('aria-label', `${name}: put in ${money(cost)}, worth ${money(value)}, ${money(pnl, true)}${cost ? ', ' + pct((pnl / cost) * 100) : ''}`);
     return li;
   }
 
   function portfolio(d) {
-    const box = h('div', 'mr-card mr-portfolio');
-    const value = num(d.value) ?? 0, cost = num(d.cost) ?? 0, pnl = value - cost;
-    const top = h('p', 'mr-tk-total');
-    top.append(h('strong', '', money(value)), ' ', h('span', 'mr-' + tone(pnl), `${money(pnl, true)}${cost ? ' ' + pct((pnl / cost) * 100) : ''}`));
-    if (num(d.cash) != null) top.append(h('span', 'mr-tk-cash', ` · cash ${money(d.cash + (num(d.bonus) || 0))}`));
-    box.append(top);
-    const list = h('ul', 'mr-tk-list');
-    for (const p of d.positions || []) list.append(row(p));
-    if ((d.positions || []).length) box.append(list);
-    return box;
+    const ps = (d.positions || []).map((p) => ({ p, cost: num(p.cost) ?? 0, value: num(p.value) ?? num(p.cost) ?? 0 }));
+    const cost = num(d.cost) ?? ps.reduce((s, x) => s + x.cost, 0), value = num(d.value) ?? ps.reduce((s, x) => s + x.value, 0);
+    const list = h('ul', 'mr-card mr-portfolio');
+    const scaleRows = Math.max(...ps.map((x) => Math.max(x.cost, x.value)), 0.01);
+    list.append(line('Total', cost, value, Math.max(cost, value, 0.01), '', 'mr-pf-total'));
+    if (ps.length > 1) for (const x of ps) list.append(line(label(x.p), x.cost, x.value, scaleRows, safeUrl(x.p.url || '')));
+    return list;
   }
 
   const kinds = { portfolio };
