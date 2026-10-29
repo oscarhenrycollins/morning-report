@@ -9,13 +9,13 @@
   'use strict';
   const h = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
   const num = (x) => (typeof x === 'number' && isFinite(x) ? x : null);
-  /* Whole dollars and whole percents: the card is for a glance, not the ledger. */
+  /* Whole dollars and whole percents (anything above zero but under 1 shows as <$1 / <1%): the card is for a glance. */
   const money = (v, sign) => {
-    const s = '$' + Math.abs(v).toLocaleString('en-US', { maximumFractionDigits: 0 });
+    const a = Math.abs(v), s = a >= 0.005 && a < 1 ? '<$1' : '$' + a.toLocaleString('en-US', { maximumFractionDigits: 0 });
     return sign ? (v >= 0 ? '+' : '−') + s : (v < 0 ? '−' : '') + s;
   };
   const cents = (p) => { const c = Math.round(p * 1000) / 10; return (Number.isInteger(c) ? c : c.toFixed(1)) + '¢'; };
-  const pct = (v) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(0) + '%';
+  const pct = (v) => { const a = Math.abs(v); return (v >= 0 ? '+' : '−') + (a >= 0.005 && a < 1 ? '<1' : a.toFixed(0)) + '%'; };
   const tone = (v) => (v > 0.00001 ? 'up' : v < -0.00001 ? 'down' : 'flat');
   const arrow = (v) => (v > 0.00001 ? '▲' : v < -0.00001 ? '▼' : '■');
   const safeUrl = (u) => { try { const x = new URL(u); return /^https:$/.test(x.protocol) ? x.href : null; } catch (e) { return null; } };
