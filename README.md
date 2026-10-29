@@ -4,7 +4,7 @@ A Wizard app that reads dated morning reports, newest first. New editions show a
 
 The app only reads. It shows whatever `<name>-YYYY-MM-DD.md` files (plus optional `-YYYY-MM-DD[-mobile].pdf` files) are in `media/Reports/morning-report/`. That folder is mounted read-only. Report content, schedules and preferences belong to the agent job that writes those files, so none of them are in this repo.
 
-- View: `/` (vanilla JS, safe DOM-built Markdown, print stylesheet). A fenced ` ```portfolio ` JSON block is drawn as a portfolio card (totals, cost-vs-value bar, dithered 30-day price chart per position); other fenced blocks show as preformatted text.
+- View: `/` (vanilla JS, safe DOM-built Markdown, print stylesheet). A fenced ` ```portfolio ` JSON block is drawn as one total line plus one ticker-style line per position; other fenced blocks show as preformatted text.
 - API: `GET /api/reports`, `GET /api/reports/{date|latest}`, `GET /api/reports/{date}.pdf`, `GET /healthz`
 - MCP: `POST /mcp` with read-only tools `reports_list` and `report_read`
 
