@@ -57,12 +57,17 @@
   }
 
   /* Selling: things the owner has listed for sale, one line each, same look as a portfolio.
-   *   {"kind":"selling","v":1,"currency":"฿","items":[{"name","url","price","market","state","buyers","newBuyers","soldPrice"}]}
-   * Line: name · asking-vs-market bar · ฿asking · mkt ฿middle · buyers (or Deal/Sold). Asking above the market middle draws hatched red, below it dotted green. */
+   *   {"kind":"selling","v":1,"currency":"฿","usdRate":0.0296,"items":[{"name","url","price","market","state","buyers","newBuyers","soldPrice"}]}
+   * Line: name · bar · ฿asking · mkt ฿middle (≈ USD caption) · buyers (or Deal/Sold). Every bar shares one scale (the
+   * biggest price on the card) so items compare by size; asking above the market middle draws hatched red, below dotted green.
+   * With 2+ items a total line comes first, amounts only (no bar). */
   function selling(d) {
     const cur = typeof d.currency === 'string' && d.currency.length <= 3 ? d.currency : '';
+    const rate = num(d.usdRate) && d.usdRate > 0 ? d.usdRate : null;
     const amt = (v) => cur + Math.round(Math.abs(v)).toLocaleString('en-US');
+    const usd = (v) => { const x = v * rate; return '$' + (x >= 100 ? Math.round(x / 10) * 10 : Math.round(x)).toLocaleString('en-US'); };
     const items = (d.items || []).map((it) => ({ it, price: num(it.price) ?? 0, market: num(it.market) }));
+    const scale = Math.max(...items.map((x) => Math.max(x.price, x.market ?? 0)), 0.01);
     const list = h('ul', 'mr-card mr-portfolio mr-selling');
     const status = (it) => {
       const sold = num(it.soldPrice);
@@ -72,25 +77,27 @@
       if (!b) return ['No buyers', 'flat'];
       return [`${b} buyer${b === 1 ? '' : 's'}${n ? ` (${n} new)` : ''}`, 'up'];
     };
-    const row = (name, price, market, url, st, cls) => {
+    const row = (name, price, market, url, st, cls, withBar) => {
       const li = h('li', 'mr-pf' + (cls ? ' ' + cls : ''));
       const n = h(url ? 'a' : 'span', 'mr-pf-name', name);
       if (url) { n.href = url; n.target = '_blank'; n.rel = 'noopener noreferrer'; }
-      const b = market ? bar(price, market, Math.max(price, market)) : bar(price, price, Math.max(price, 0.01));
-      const m = market ? ` · mkt ${amt(market)}` : '';
-      li.append(n, b, h('span', 'mr-pf-amt', amt(price) + m), h('span', 'mr-pf-pl mr-' + st[1], st[0]));
-      li.setAttribute('aria-label', `${name}: asking ${amt(price)}${market ? ', typical ' + amt(market) : ''}, ${st[0]}`);
+      const b = !withBar ? h('span', 'mr-pf-bar mr-pf-nobar')
+        : bar(price, market ?? price, scale);
+      const a = h('span', 'mr-pf-amt');
+      a.append(h('span', 'mr-sl-main', amt(price) + (market ? ` · mkt ${amt(market)}` : '')));
+      if (rate) a.append(h('span', 'mr-sl-usd', '≈ ' + usd(price) + (market ? ` · mkt ${usd(market)}` : '')));
+      li.append(n, b, a, h('span', 'mr-pf-pl mr-' + st[1], st[0]));
+      li.setAttribute('aria-label', `${name}: asking ${amt(price)}${rate ? ' (about ' + usd(price) + ')' : ''}${market ? ', typical ' + amt(market) : ''}, ${st[0]}`);
       return li;
     };
     if (items.length > 1) {
       const price = items.reduce((s, x) => s + x.price, 0);
-      const priced = items.filter((x) => x.market);
-      const market = priced.length === items.length ? priced.reduce((s, x) => s + x.market, 0) : null;
+      const market = items.every((x) => x.market) ? items.reduce((s, x) => s + x.market, 0) : null;
       const buyers = items.reduce((s, x) => s + (num(x.it.buyers) ?? 0), 0);
       const fresh = items.reduce((s, x) => s + (num(x.it.newBuyers) ?? 0), 0);
-      list.append(row(`${items.length} items`, price, market, '', status({ buyers, newBuyers: fresh }), 'mr-pf-total'));
+      list.append(row(`${items.length} items`, price, market, '', status({ buyers, newBuyers: fresh }), 'mr-pf-total', false));
     }
-    for (const x of items) list.append(row(String(x.it.name || 'Item'), x.price, x.market, safeUrl(x.it.url || ''), status(x.it)));
+    for (const x of items) list.append(row(String(x.it.name || 'Item'), x.price, x.market, safeUrl(x.it.url || ''), status(x.it), '', true));
     return list;
   }
 
