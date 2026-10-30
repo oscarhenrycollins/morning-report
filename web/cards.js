@@ -24,13 +24,31 @@
   const label = (p) => { const n = String(p.name || p.market || 'Market').trim(); return p.name ? n.split(/\s+/).pop() : n; };
 
   /* Put in vs worth now: solid = money in (or what is left of it), dotted green = gain, hatched red = loss.
-     Widths are shares of `scale` (the biggest amount on the card) so rows compare. */
-  function bar(cost, value, scale) {
+     Widths are shares of `scale` (the biggest amount on the card). When `usd` (amount -> US dollars) is known,
+     the bar also joins a report-wide scale: after a render every card's bars are resized against the biggest
+     dollar amount on the page, so the trades and the things for sale compare by size. */
+  const shared = [];
+  let pending = false;
+  function rescale() {
+    pending = false;
+    for (let i = shared.length - 1; i >= 0; i--) if (!shared[i].base.isConnected) shared.splice(i, 1);
+    const max = Math.max(...shared.map((x) => Math.max(x.a, x.b) * x.usd), 0);
+    if (!(max > 0)) return;
+    for (const x of shared) {
+      x.base.style.width = (Math.min(x.a, x.b) * x.usd / max) * 100 + '%';
+      x.diff.style.width = (Math.abs(x.b - x.a) * x.usd / max) * 100 + '%';
+    }
+  }
+  function bar(cost, value, scale, usd) {
     const b = h('span', 'mr-pf-bar'); b.setAttribute('aria-hidden', 'true');
     const base = h('span', 'mr-pf-in'), diff = h('span', 'mr-pf-diff mr-' + tone(value - cost));
     base.style.width = (Math.min(cost, value) / scale) * 100 + '%';
     diff.style.width = (Math.abs(value - cost) / scale) * 100 + '%';
     b.append(base, diff);
+    if (usd > 0) {
+      shared.push({ base, diff, a: cost, b: value, usd });
+      if (!pending) { pending = true; setTimeout(rescale, 0); }
+    }
     return b;
   }
 
@@ -40,7 +58,7 @@
     const pnl = value - cost;
     const n = h(url ? 'a' : 'span', 'mr-pf-name', name);
     if (url) { n.href = url; n.target = '_blank'; n.rel = 'noopener noreferrer'; }
-    li.append(n, bar(cost, value, scale), h('span', 'mr-pf-amt', `${money(cost)} → ${money(value)}`),
+    li.append(n, bar(cost, value, scale, 1), h('span', 'mr-pf-amt', `${money(cost)} → ${money(value)}`),
       h('span', 'mr-pf-pl mr-' + tone(pnl), `${money(pnl, true)} ${cost ? pct((pnl / cost) * 100) : ''}`.trim()));
     li.setAttribute('aria-label', `${name}: put in ${money(cost)}, worth ${money(value)}, ${money(pnl, true)}${cost ? ', ' + pct((pnl / cost) * 100) : ''}`);
     return li;
@@ -58,7 +76,7 @@
 
   /* Selling: things the owner has listed for sale, one line each, same look as a portfolio.
    *   {"kind":"selling","v":1,"currency":"฿","usdRate":0.0296,"items":[{"name","url","price","market","state","buyers","newBuyers","soldPrice"}]}
-   * Line: name · bar · ฿asking · mkt ฿middle (≈ USD caption) · buyers (or Deal/Sold). Every bar shares one scale (the
+   * Line: name · bar · ฿asking · mkt ฿middle (each with ≈ dollars under it) · buyers (or Deal/Sold). Every bar shares one scale (the
    * biggest price on the card) so items compare by size; asking above the market middle draws hatched red, below dotted green.
    * With 2+ items a total line comes first, amounts only (no bar). */
   function selling(d) {
@@ -77,15 +95,21 @@
       if (!b) return ['No buyers', 'flat'];
       return [`${b} buyer${b === 1 ? '' : 's'}${n ? ` (${n} new)` : ''}`, 'up'];
     };
+    /* Amounts: two right-aligned columns, baht on top and (≈ dollars) right under it. */
+    const money2 = (label, v) => {
+      const c = h('span', 'mr-sl-col');
+      c.append(h('span', 'mr-sl-main', (label ? label + ' ' : '') + amt(v)));
+      if (rate) c.append(h('span', 'mr-sl-usd', '(' + usd(v) + ')'));
+      return c;
+    };
     const row = (name, price, market, url, st, cls, withBar) => {
       const li = h('li', 'mr-pf' + (cls ? ' ' + cls : ''));
       const n = h(url ? 'a' : 'span', 'mr-pf-name', name);
       if (url) { n.href = url; n.target = '_blank'; n.rel = 'noopener noreferrer'; }
-      const b = !withBar ? h('span', 'mr-pf-bar mr-pf-nobar')
-        : bar(price, market ?? price, scale);
+      const b = !withBar ? h('span', 'mr-pf-bar mr-pf-nobar') : bar(price, market ?? price, scale, rate);
+      if (withBar && market) b.lastChild.className = 'mr-pf-diff mr-' + (price > market ? 'down' : price < market ? 'up' : 'flat');
       const a = h('span', 'mr-pf-amt');
-      a.append(h('span', 'mr-sl-main', amt(price) + (market ? ` · mkt ${amt(market)}` : '')));
-      if (rate) a.append(h('span', 'mr-sl-usd', '≈ ' + usd(price) + (market ? ` · mkt ${usd(market)}` : '')));
+      a.append(money2('', price), market ? money2('mkt', market) : h('span', 'mr-sl-col'));
       li.append(n, b, a, h('span', 'mr-pf-pl mr-' + st[1], st[0]));
       li.setAttribute('aria-label', `${name}: asking ${amt(price)}${rate ? ' (about ' + usd(price) + ')' : ''}${market ? ', typical ' + amt(market) : ''}, ${st[0]}`);
       return li;
