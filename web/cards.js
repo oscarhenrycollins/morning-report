@@ -56,7 +56,45 @@
     return list;
   }
 
-  const kinds = { portfolio };
+  /* Selling: things the owner has listed for sale, one line each, same look as a portfolio.
+   *   {"kind":"selling","v":1,"currency":"฿","items":[{"name","url","price","market","state","buyers","newBuyers","soldPrice"}]}
+   * Line: name · asking-vs-market bar · ฿asking · mkt ฿middle · buyers (or Deal/Sold). Asking above the market middle draws hatched red, below it dotted green. */
+  function selling(d) {
+    const cur = typeof d.currency === 'string' && d.currency.length <= 3 ? d.currency : '';
+    const amt = (v) => cur + Math.round(Math.abs(v)).toLocaleString('en-US');
+    const items = (d.items || []).map((it) => ({ it, price: num(it.price) ?? 0, market: num(it.market) }));
+    const list = h('ul', 'mr-card mr-portfolio mr-selling');
+    const status = (it) => {
+      const sold = num(it.soldPrice);
+      if (it.state === 'sold') return ['Sold' + (sold ? ' ' + amt(sold) : ''), 'up'];
+      if (it.state === 'pending') return ['Deal' + (sold ? ' ' + amt(sold) : ''), 'up'];
+      const b = num(it.buyers) ?? 0, n = num(it.newBuyers) ?? 0;
+      if (!b) return ['No buyers', 'flat'];
+      return [`${b} buyer${b === 1 ? '' : 's'}${n ? ` (${n} new)` : ''}`, 'up'];
+    };
+    const row = (name, price, market, url, st, cls) => {
+      const li = h('li', 'mr-pf' + (cls ? ' ' + cls : ''));
+      const n = h(url ? 'a' : 'span', 'mr-pf-name', name);
+      if (url) { n.href = url; n.target = '_blank'; n.rel = 'noopener noreferrer'; }
+      const b = market ? bar(price, market, Math.max(price, market)) : bar(price, price, Math.max(price, 0.01));
+      const m = market ? ` · mkt ${amt(market)}` : '';
+      li.append(n, b, h('span', 'mr-pf-amt', amt(price) + m), h('span', 'mr-pf-pl mr-' + st[1], st[0]));
+      li.setAttribute('aria-label', `${name}: asking ${amt(price)}${market ? ', typical ' + amt(market) : ''}, ${st[0]}`);
+      return li;
+    };
+    if (items.length > 1) {
+      const price = items.reduce((s, x) => s + x.price, 0);
+      const priced = items.filter((x) => x.market);
+      const market = priced.length === items.length ? priced.reduce((s, x) => s + x.market, 0) : null;
+      const buyers = items.reduce((s, x) => s + (num(x.it.buyers) ?? 0), 0);
+      const fresh = items.reduce((s, x) => s + (num(x.it.newBuyers) ?? 0), 0);
+      list.append(row(`${items.length} items`, price, market, '', status({ buyers, newBuyers: fresh }), 'mr-pf-total'));
+    }
+    for (const x of items) list.append(row(String(x.it.name || 'Item'), x.price, x.market, safeUrl(x.it.url || ''), status(x.it)));
+    return list;
+  }
+
+  const kinds = { portfolio, selling };
   /* Returns a node for a fenced block: a card for a known `lang`, else <pre>. */
   function render(lang, text) {
     if (kinds[lang]) {
