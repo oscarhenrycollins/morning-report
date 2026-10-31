@@ -125,7 +125,63 @@
     return list;
   }
 
-  const kinds = { portfolio, selling };
+  /* Health: a few traffic-light tiles (one per metric the report sends), one plain line and a small 7-day strip.
+   *   {"kind":"health","v":1,"day":"YYYY-MM-DD","label":"Yesterday","link":"/<app>/",
+   *    "tiles":[{"name","value","word","tone","note"}],"line":"...",
+   *    "strip":{"days":["YYYY-MM-DD",..],"rows":[{"name","tones":["green"|"yellow"|"red"|"grey"|null,..]}]}}
+   * Tones are one shared scale: green good, yellow okay, red needs attention, grey no data. The last strip
+   * column is the day the tiles show. `link` must be a same-origin path (/x/) or https. */
+  const TONES = ['green', 'yellow', 'red', 'grey'];
+  const toneOf = (t) => (TONES.includes(t) ? t : 'grey');
+  const toneWord = { green: 'good', yellow: 'okay', red: 'needs attention', grey: 'no data' };
+  const localPath = (u) => (typeof u === 'string' && /^\/[A-Za-z0-9._~-]/.test(u) && !/[\s\\]/.test(u) ? u : null);
+  const dayName = (iso, opts) => { const t = Date.parse(String(iso) + 'T12:00:00Z'); return isFinite(t) ? new Date(t).toLocaleDateString('en-GB', { ...opts, timeZone: 'UTC' }) : ''; };
+  function health(d) {
+    const card = h('section', 'mr-card mr-health');
+    const head = h('div', 'mr-hl-head');
+    const when = [String(d.label || '').slice(0, 40), dayName(d.day, { weekday: 'short', day: 'numeric', month: 'short' })].filter(Boolean).join(' · ');
+    head.append(h('span', 'mr-hl-day', when));
+    const href = localPath(d.link) || safeUrl(d.link || '');
+    if (href) { const a = h('a', 'mr-hl-link', 'Open Health →'); a.href = href; a.target = '_blank'; a.rel = 'noopener'; head.append(a); }
+    card.append(head);
+    const tiles = h('ul', 'mr-hl-tiles');
+    for (const t of (Array.isArray(d.tiles) ? d.tiles : []).slice(0, 4)) {
+      const tone = toneOf(t.tone), li = h('li', 'mr-hl-tile mr-t-' + tone);
+      li.append(h('span', 'mr-hl-name', String(t.name || '')), h('span', 'mr-hl-num', String(t.value ?? '–')));
+      const chip = h('span', 'mr-hl-chip'); chip.append(h('i', 'mr-hl-dot'), String(t.word || toneWord[tone]));
+      li.append(chip);
+      if (t.note) li.append(h('span', 'mr-hl-note', String(t.note)));
+      li.setAttribute('aria-label', `${t.name}: ${t.value ?? 'no data'}, ${t.word || ''} (${toneWord[tone]})${t.note ? ', ' + t.note : ''}`);
+      tiles.append(li);
+    }
+    tiles.style.setProperty('--k', Math.max(tiles.children.length, 1));
+    card.append(tiles);
+    if (d.line) card.append(h('p', 'mr-hl-line', String(d.line)));
+    const s = d.strip && typeof d.strip === 'object' ? d.strip : null;
+    const days = s && Array.isArray(s.days) ? s.days.slice(-14) : [];
+    if (days.length && Array.isArray(s.rows) && s.rows.length) {
+      const g = h('div', 'mr-hl-strip'); g.style.setProperty('--n', days.length);
+      g.setAttribute('role', 'img');
+      const desc = [];
+      for (const r of s.rows.slice(0, 4)) {
+        const tones = Array.isArray(r.tones) ? r.tones.slice(-days.length) : [];
+        g.append(h('span', 'mr-hl-rname', String(r.name || '')));
+        days.forEach((day, i) => {
+          const tone = toneOf(tones[i]), q = h('i', 'mr-hl-sq mr-t-' + tone + (i === days.length - 1 ? ' mr-hl-now' : ''));
+          q.title = `${r.name} ${dayName(day, { weekday: 'short', day: 'numeric', month: 'short' })}: ${toneWord[tone]}`;
+          g.append(q);
+        });
+        desc.push(`${r.name}: ${tones.map((x) => toneWord[toneOf(x)]).join(', ')}`);
+      }
+      g.append(h('span', 'mr-hl-rname'));
+      for (const day of days) g.append(h('span', 'mr-hl-dname', dayName(day, { weekday: 'narrow' })));
+      g.setAttribute('aria-label', `Last ${days.length} days. ` + desc.join('. '));
+      card.append(g);
+    }
+    return card;
+  }
+
+  const kinds = { portfolio, selling, health };
   /* Returns a node for a fenced block: a card for a known `lang`, else <pre>. */
   function render(lang, text) {
     if (kinds[lang]) {
